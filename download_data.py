@@ -30,6 +30,7 @@ class StockData(object):
 		self.port = port
 		self.passwd = passwd
 		self.host = host
+		self.date = "20190315"
 
 	def get_codes(self):
 		"""Obtain stock code from pkl format file"""
@@ -39,12 +40,13 @@ class StockData(object):
 
 	def connect_db(self):
 		"""Connect database"""
-		self.db = pymysql.connect(host="localhost",
-							 user="root",
-							 passwd="hanwei1")
+		self.db = pymysql.connect(host=self.host,
+							 user=self.user,
+							 password=self.passwd,
+							 db=self.database,)
 		self.cursor = self.db.cursor()
 
-	def down_data(self):
+	def down_data(self, append=True):
 		"""
 		Download stock daily data and save to MySQL
 		Database name is root
@@ -54,12 +56,15 @@ class StockData(object):
 				":"+self.port+"/"+self.database
 		engine = create_engine(site)
 		pro = ts.pro_api()
-		for code in self.codes[1127:]:
+		for code in self.codes:
 			name = code.split(".")[0]
 			count = 0
 			while True:
 				try:
-					data = pro.daily(ts_code=code)
+					if append:
+						data = pro.daily(ts_code=code, start_date=self.date)
+					else:
+						data = pro.daily(ts_code=code)
 				except requests.exceptions.ReadTimeout as e:
 					sleep(1)
 					count += 1
@@ -76,7 +81,7 @@ class StockData(object):
 					sleep(5)
 				else:
 					print("code "+name+" has done!"); break
-			data.to_sql(name=name, con=engine, if_exists="replace", index=False)
+			data.to_sql(name=name, con=engine, if_exists="append", index=False)
 
 	def writelog(self, logname):
 		logging.basicConfig(level=logging.DEBUG,
