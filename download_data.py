@@ -46,7 +46,7 @@ class StockData(object):
 							 db=self.database,)
 		self.cursor = self.db.cursor()
 
-	def down_data(self, append=True):
+	def down_data(self, app=True):
 		"""
 		Download stock daily data and save to MySQL
 		Database name is root
@@ -61,7 +61,7 @@ class StockData(object):
 			count = 0
 			while True:
 				try:
-					if append:
+					if app:
 						data = pro.daily(ts_code=code, start_date=self.date)
 					else:
 						data = pro.daily(ts_code=code)
@@ -81,7 +81,10 @@ class StockData(object):
 					sleep(5)
 				else:
 					print("code "+name+" has done!"); break
-			data.to_sql(name=name, con=engine, if_exists="append", index=False)
+			if app:
+				data.to_sql(name=name, con=engine, if_exists="append", index=False)
+			else:
+				data.to_sql(name=name, con=engine, if_exists="replace", index=False)
 
 	def writelog(self, logname):
 		logging.basicConfig(level=logging.DEBUG,

@@ -1,3 +1,4 @@
+#!/home/hanwei/soft/anaconda3/bin/python3.7
 #!coding:utf-8
 
 import pandas as pd
@@ -5,6 +6,7 @@ from pickle import load
 from pickle import dump
 import tushare as ts
 import logging
+import datetime
 import time
 import copy
 import pymysql
@@ -49,13 +51,13 @@ class Upgrade_list():
 	def addtables(self, tables):
 		Stock = StockData("stocklist.pkl", "stock", "root", "3306", "hanwei1", "localhost")
 		Stock.codes = tables
-		Stock.down_data(append=False)
+		Stock.down_data(app=False)
 
 	def upgrade(self):
 		with open('date.pkl', 'rb') as infile:
 			date = load(infile)
 		last_date = date[-1]
-		this_date = time.strftime("%Y%m%d")
+		this_date = (datetime.datetime.now()+datetime.timedelta(days=+1)).strftime("%Y%m%d")
 		date.append(this_date)
 		with open('date.pkl', 'wb') as outfile:
 			dump(date, outfile)
@@ -85,6 +87,7 @@ class Upgrade_list():
 				self.logger.info(mes)
 
 def main():
+	print(time.strftime("%Y%m%d"))
 	Up = Upgrade_list("stocklist.pkl")
 	Up.loger()
 	Up.change()
